@@ -160,10 +160,6 @@ function App() {
   };
 
   const withdrawHandler = async () => {
-    const { ethereum } = window;
-    const provider = new ethers.providers.Web3Provider(ethereum);
-    const signer = provider.getSigner();
-    const Contract = new ethers.Contract(zvaultAddress, vaultAbi, signer);
 
     var userBalance = getBalance();
     if (userBalance > 0 & userBalance < withdrawAmount){
