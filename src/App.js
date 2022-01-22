@@ -1,15 +1,15 @@
-import logo from "./logo.svg";
+// import logo from "./logo.svg";
 import "./App.css";
 import React, { useState, useEffect } from "react";
 
 import { ethers } from "ethers";
 
 import zetaContract from "./contracts/zeta-abi.json";
-import zzetaContract from "./contracts/zzeta-abi.json";
+// import zzetaContract from "./contracts/zzeta-abi.json";
 import zvaultContract from "./contracts/zvault-abi.json";
 
 const zetaAddress = "0x7100C4D0BfF8689238aD80af6185Cd790Ed80f71";
-const zzetaAddress = "0xbf156D554385CBf4BAB257c97405C8a0A266fE36";
+// const zzetaAddress = "0xbf156D554385CBf4BAB257c97405C8a0A266fE36";
 const zvaultAddress = "0x2b94a256B4BA600e259A799A3043283B74fD09dB";
 
 const vaultAbi = zvaultContract.abi;
