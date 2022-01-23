@@ -10,7 +10,7 @@ import zvaultContract from "./contracts/zvault-abi.json";
 
 const zetaAddress = "0x7100C4D0BfF8689238aD80af6185Cd790Ed80f71";
 const zzetaAddress = "0xbf156D554385CBf4BAB257c97405C8a0A266fE36";
-const zvaultAddress = "0x29a92ece6a19c9d726f66396c40bbb3e2502a4cb";
+const zvaultAddress = "0x2b94a256b4ba600e259a799a3043283b74fd09db";
 
 const vaultAbi = zvaultContract.abi;
 const zetaAbi = zetaContract.abi;
@@ -21,6 +21,7 @@ function App() {
 	const [getZetaNumber, setGetZetaNumber] = useState("-1");
 	const [getZZetaNumber, setGetZZetaNumber] = useState("-1");
   const [stakingApproval, setStakingApproval] = useState(null);
+  const [withdrawApproval, setWithdrawApproval] = useState(null);
   const [depositAmount, setDepositAmount] = useState(0);
   const [withdrawAmount, setWithdrawAmount] = useState(0);
 
@@ -84,12 +85,12 @@ function App() {
 		const wallet = provider.getSigner();
 		const address = currentAccount;
 
-		const contract = new ethers.Contract(zzetaAddress, zzetaContract.abi, wallet);
+		const contract = new ethers.Contract(zzetaAddress, zzetaAbi, wallet);
 		const balance = await contract.balanceOf(address);
 		
 		// change state of getZetaNumber to balance
 		setGetZZetaNumber(balance.toString());
-
+		console.log(balance.toString());
 	};
 
 	const approveDeposit = async () => {
@@ -110,6 +111,26 @@ function App() {
 		);
 		console.log("Approve tx: ", tx);
     setStakingApproval(tx);
+	};	
+	
+	const approveWithdrawal = async () => {
+	const { ethereum } = window;
+    const provider = new ethers.providers.Web3Provider(ethereum);
+
+    const signer = provider.getSigner();
+
+		const Contract = new ethers.Contract(
+			zzetaAddress,
+			zzetaAbi,
+      signer  
+
+		);
+		const tx = await Contract.approve(
+			zvaultAddress,
+			ethers.utils.parseEther("1")
+		);
+		console.log("Approve tx: ", tx);
+    setWithdrawApproval(tx);
 	};
 
 	const stakingHandler = async () => {
@@ -138,6 +159,7 @@ function App() {
 		}
 	};
 
+
 	const connectWalletButton = () => {
 		return (
 			<button
@@ -155,7 +177,7 @@ function App() {
 			</button>
 		);
 	};
-  const approveButton = () => {
+  const approveStakeButton = () => {
     return (
       <button onClick={approveDeposit} className="cta-button approve-button">
         Approve
@@ -163,12 +185,25 @@ function App() {
     );
   };
 
+  const maxWithdrawText = async() => {
+	// var balance = await getZZetaBalance();
+	setWithdrawAmount(await getZZetaBalance());
+	// return withdrawAmount;
+  };
+  const maxWithdrawButton = () => {
+	return (
+		<button onClick={maxWithdrawText} className="cta-button max-withdraw-button">
+			Max Withdraw
+		</button>
+	);
+	  };
+
   const stakingStatusButton = () => {
     var button;
     if (currentAccount && stakingApproval) {
 			button = stakeButton();
 		} else if (currentAccount && !stakingApproval) {
-			button = approveButton();
+			button = approveStakeButton();
 		} else {
 			button = connectWalletButton();
 		}
@@ -177,37 +212,36 @@ function App() {
 
   const withdrawHandler = async () => {
 
-    var userBalance = getZZetaBalance();
-    if (userBalance > 0 & userBalance < withdrawAmount){
-     try {
-			const { ethereum } = window;
+	try {
+		const { ethereum } = window;
+		var userBalance = await getZZetaBalance();
+		console.log(userBalance);
+    	if (userBalance < 0 || userBalance < withdrawAmount){
+			alert("You don't have enough ZZeta to withdraw!");
+		}
 
-			if (ethereum) {
-				const provider = new ethers.providers.Web3Provider(ethereum);
-				const signer = provider.getSigner();
-				const Contract = new ethers.Contract(zvaultAddress, vaultAbi, signer);
+		if (ethereum) {
+			const provider = new ethers.providers.Web3Provider(ethereum);
+			const signer = provider.getSigner();
+			const Contract = new ethers.Contract(zvaultAddress, vaultAbi, signer);
 
-				console.log("Initialize payment");
-				let Txn = await Contract.deposit(depositAmount);
+			console.log("Initialize Withdrawal");
+			let Txn = await Contract.withdraw(depositAmount);
 
-				console.log("Minting... please wait");
-				await Txn.wait();
+			console.log("Withdrawing... please wait");
+			await Txn.wait();
 
-				console.log(
-					`Mint, see transaction: https://goerli.etherscan.io/tx/${Txn.hash}`
-				);
-			} else {
-				console.log("Ethereum object does not exist");
-			}
-		} catch (err) {
-			console.log(err);
-		}}
+			console.log(
+				`Mint, see transaction: https://goerli.etherscan.io/tx/${Txn.hash}`
+			);
+		} else {
+			console.log("Ethereum object does not exist");
+		}
+	} catch (err) {
+		console.log(err);
+	}
 
-
-     else {
-      alert("You don't have enough tokens to withdraw!");
-    }
-  }
+  };
 
   const withdrawButton = () => {
     return (
@@ -219,17 +253,23 @@ function App() {
 
   const withdrawStatusButton = () => {
     var button;
-    if (currentAccount && stakingApproval) {
+    if (currentAccount && withdrawApproval) {
       button = withdrawButton();
-    } else if (currentAccount && !stakingApproval) {
-      button = approveButton();
+    } else if (currentAccount && !withdrawApproval) {
+      button = approveWithdrawalButton();
     } else {
       button = connectWalletButton();
     }
     return button;
   };
 
-
+  const approveWithdrawalButton = () => {
+	return (
+		<button onClick={approveWithdrawal} className="cta-button approve-button">
+			Approve
+		</button>
+	);
+	  };
 
 	useEffect(() => {
 		checkWalletIsConnected();
@@ -238,19 +278,34 @@ function App() {
 	return (
 		<div className="main-app">
 			<h1>Zeta Finance</h1>
-      {/* Create a text input box of deposit amount */}
-      <div className="input-box">
-      Deposit Amount: <input type="text" value={depositAmount} onChange={(e) => setDepositAmount(e.target.value)} />
-      </div>
-      {stakingStatusButton()}
-      <div className="input-box">
-      Withdraw Amount: <input type="text" value={withdrawAmount} onChange={(e) => setWithdrawAmount(e.target.value)} />
-      </div>
-      {withdrawStatusButton()}
+			{/* Create a text input box of deposit amount */}
+			<div className="input-box">
+				Deposit Amount:{" "}
+				<input
+					type="text"
+					value={depositAmount}
+					onChange={(e) => setDepositAmount(e.target.value)}
+				/>
+			</div>
+			{stakingStatusButton()}
+			<div className="input-box">
+				Withdraw Amount:{" "}
+				<input
+					type="text"
+					value={withdrawAmount}
+					onChange={(e) => setWithdrawAmount(e.target.value)}
+				/>
+			</div>
+			{withdrawStatusButton()}
+			{maxWithdrawButton()}
 
 			<div className="balance-container">
-				<h2>Balance: {getZetaNumber}</h2>
-				<button className="cta-button balance-button" onClick={geZetadBalance} type="button">
+				<h2>Zeta Balance: {getZetaNumber}</h2>
+				<button
+					className="cta-button balance-button"
+					onClick={getZetaBalance}
+					type="button"
+				>
 					Get Zeta Balance
 				</button>
 			</div>
