@@ -5,19 +5,21 @@ import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 
 import zetaContract from "./contracts/zeta-abi.json";
-// import zzetaContract from "./contracts/zzeta-abi.json";
+import zzetaContract from "./contracts/zzeta-abi.json";
 import zvaultContract from "./contracts/zvault-abi.json";
 
 const zetaAddress = "0x7100C4D0BfF8689238aD80af6185Cd790Ed80f71";
-// const zzetaAddress = "0xbf156D554385CBf4BAB257c97405C8a0A266fE36";
-const zvaultAddress = "0x2b94a256B4BA600e259A799A3043283B74fD09dB";
+const zzetaAddress = "0xbf156D554385CBf4BAB257c97405C8a0A266fE36";
+const zvaultAddress = "0x29a92ece6a19c9d726f66396c40bbb3e2502a4cb";
 
 const vaultAbi = zvaultContract.abi;
 const zetaAbi = zetaContract.abi;
+const zzetaAbi = zzetaContract.abi;
 
 function App() {
 	const [currentAccount, setCurrentAccount] = useState(null);
-	const [getNumber, setGetNumber] = useState("-1");
+	const [getZetaNumber, setGetZetaNumber] = useState("-1");
+	const [getZZetaNumber, setGetZZetaNumber] = useState("-1");
   const [stakingApproval, setStakingApproval] = useState(null);
   const [depositAmount, setDepositAmount] = useState(0);
   const [withdrawAmount, setWithdrawAmount] = useState(0);
@@ -62,7 +64,7 @@ function App() {
 		}
 	};
 
-	const getBalance = async () => {
+	const getZetaBalance = async () => {
     const { ethereum } = window;
     const provider = new ethers.providers.Web3Provider(ethereum);
     const wallet = provider.getSigner();
@@ -71,8 +73,22 @@ function App() {
     const contract = new ethers.Contract(zetaAddress, zetaContract.abi, wallet);
     const balance = await contract.balanceOf(address);
     
-    // change state of getNumber to balance
-    setGetNumber(balance.toString());
+    // change state of getZetaNumber to balance
+    setGetZetaNumber(balance.toString());
+
+	};
+
+	const getZZetaBalance = async () => {
+		const { ethereum } = window;
+		const provider = new ethers.providers.Web3Provider(ethereum);
+		const wallet = provider.getSigner();
+		const address = currentAccount;
+
+		const contract = new ethers.Contract(zzetaAddress, zzetaContract.abi, wallet);
+		const balance = await contract.balanceOf(address);
+		
+		// change state of getZetaNumber to balance
+		setGetZZetaNumber(balance.toString());
 
 	};
 
@@ -161,7 +177,7 @@ function App() {
 
   const withdrawHandler = async () => {
 
-    var userBalance = getBalance();
+    var userBalance = getZZetaBalance();
     if (userBalance > 0 & userBalance < withdrawAmount){
      try {
 			const { ethereum } = window;
@@ -233,9 +249,9 @@ function App() {
       {withdrawStatusButton()}
 
 			<div className="balance-container">
-				<h2>Balance: {getNumber}</h2>
-				<button className="cta-button balance-button" onClick={getBalance} type="button">
-					Get Balance
+				<h2>Balance: {getZetaNumber}</h2>
+				<button className="cta-button balance-button" onClick={geZetadBalance} type="button">
+					Get Zeta Balance
 				</button>
 			</div>
 		</div>

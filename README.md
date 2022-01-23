@@ -1,6 +1,7 @@
-# Getting Started with Create React App
+# Zeta Finance
+Zeta Finance is a decentralized finance platform that aggregates DAO
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+!["./assets/demo.PNG"](./assets/demo.PNG)
 
 ## Available Scripts
 
